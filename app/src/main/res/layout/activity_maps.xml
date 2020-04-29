@@ -24,15 +24,22 @@
         android:background="@drawable/bg_round"/>
 
     <Button
-        android:id="@+id/option"
+        android:id="@+id/bt_add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@id/map"
+        android:layout_below="@+id/sv_location"
         android:layout_marginBottom="20dp"
         android:layout_marginLeft="20dp"
-        android:text="="
-        android:textSize="30dp"/>
-
+        android:text="Add"
+        android:textSize="20sp"/>
+    <TextView
+        android:id="@+id/testText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/bt_add"
+        android:layout_margin="20dp"
+        android:textSize="20sp"
+        android:text="Buttom"/>
 
 
 </RelativeLayout>

@@ -3,13 +3,16 @@ package kukhurikan.bhugol;
 import androidx.fragment.app.FragmentActivity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.SearchView;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -24,18 +27,34 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, BottomSheetAddress.BottomSheetListener {
 
     private GoogleMap mMap;
     SupportMapFragment mapFragment;
     SearchView searchView;
+    List<LatLng> addresses;
     List<Address> addressList = null;
     Geocoder geocoder;
+    Button add;
+    TextView testText;
+    int x=0,y=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        testText = findViewById(R.id.testText);
+        addresses = new ArrayList<LatLng>();
+
+        add = findViewById(R.id.bt_add); // button to display bottomSheetDialog to add extra addresses
+        add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BottomSheetAddress bottomSheetAddress = new BottomSheetAddress();
+                bottomSheetAddress.show(getSupportFragmentManager(),"BottomSheetAddress");
+            }
+        });
 
         //Defining SearchView
         searchView = findViewById(R.id.sv_location);
@@ -96,63 +115,75 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(LatLng latLng) {
-                InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
-                View view = getCurrentFocus();
-                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-            }
-        });
+//        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+//            @Override
+//            public void onMapClick(LatLng latLng) {
+//                InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+//                View view = getCurrentFocus();
+//                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+//            }
+//        });
 //         Add a marker in Sydney and move the camera
         LatLng thamel = new LatLng(27.6726531,85.3227311);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(thamel));
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(thamel,18));
-        testDirection();
+//        testDirection();
 
 
 
-//        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-//            @Override
-//            public void onMapClick(LatLng point) {
-//                mMap.addMarker(new MarkerOptions().position(point).title("Marker"));
-//                mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
-//            }
-//        });
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng point) {
+                View view = getCurrentFocus();
+                if (view != null) {
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                }
 
-    }
-
-
-    public void testDirection()
-    {
-        ArrayList<LatLng> locations = new ArrayList<LatLng>();
-        ArrayList<Integer> colors = new ArrayList<>();
-
-        colors.clear();
-        colors.add(Color.BLUE);
-        colors.add(Color.RED);
-        colors.add(Color.GREEN);
-        colors.add(Color.BLACK);
-
-        locations.clear();
-        locations.add(new LatLng(27.6726531,85.3227311));
-        locations.add(new LatLng(27.6679342,85.3232655));
-        locations.add(new LatLng(27.6691794,85.3159152));
-
-
-        for(int i=0;i<locations.size();i++){
-            addMarker(locations.get(i));
-            if(i<locations.size()-1) {
-                new GetPathFromLocation(colors.get(i), locations.get(i), locations.get(i + 1), new DirectionPointListener() {
-                    @Override
-                    public void onPath(PolylineOptions polyLine) {
-                        mMap.addPolyline(polyLine);
-                    }
-                }).execute();
+                if(y==9) {
+                    mMap.addMarker(new MarkerOptions().position(point).title("Marker"));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
+                    addresses.add(x,point);
+                    y=0;
+                    BottomSheetAddress bottomSheetAddress = new BottomSheetAddress();
+                    bottomSheetAddress.setText("Button: "+ x + " clicked",x);
+                }
             }
-        }
+        });
 
     }
+
+
+//    public void testDirection()
+//    {
+//        ArrayList<LatLng> locations = new ArrayList<LatLng>();
+//        ArrayList<Integer> colors = new ArrayList<>();
+//
+//        colors.clear();
+//        colors.add(Color.BLUE);
+//        colors.add(Color.RED);
+//        colors.add(Color.GREEN);
+//        colors.add(Color.BLACK);
+//
+//        locations.clear();
+//        locations.add(new LatLng(27.6726531,85.3227311));
+//        locations.add(new LatLng(27.6679342,85.3232655));
+//        locations.add(new LatLng(27.6691794,85.3159152));
+//
+//
+//        for(int i=0;i<locations.size();i++){
+//            addMarker(locations.get(i));
+//            if(i<locations.size()-1) {
+//                new GetPathFromLocation(colors.get(i), locations.get(i), locations.get(i + 1), new DirectionPointListener() {
+//                    @Override
+//                    public void onPath(PolylineOptions polyLine) {
+//                        mMap.addPolyline(polyLine);
+//                    }
+//                }).execute();
+//            }
+//        }
+//
+//    }
     public void addMarker(LatLng latLng)
     {
         mMap.addMarker(new MarkerOptions().position(latLng).title(""));
@@ -172,4 +203,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
+    @Override
+    public void onButtonClicked(int x, int y) {
+        testText.setText("Button: "+ x +" pressed!");
+        this.x=x;
+        this.y=y;
+
+    }
 }
